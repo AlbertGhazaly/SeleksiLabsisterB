@@ -1,3 +1,6 @@
 tcmatmul/
 tcmatmul.zip
 *.class
+*.o
+*.exe
+target/

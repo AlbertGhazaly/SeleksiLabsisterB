@@ -47,7 +47,7 @@ def multiply_matrices_dask(A, B):
     
     return C
 def main():
-    matrices = read_matrix_from_file('../tcmatmul/64.txt')
+    matrices = read_matrix_from_file('../tcmatmul/32.txt')
     
     if len(matrices) != 2:
         raise ValueError("File must contain exactly two matrices")
