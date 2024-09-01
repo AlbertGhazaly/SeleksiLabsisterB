@@ -51,7 +51,7 @@ Bonus
             | img
             | Readme.md
 
-    2. Jalankan program sesuai pengujian
+    2. Jalankan program sesuai pengujian (jangan lupa install dask dan dask scheduler untuk bonus Distributed System)
 
 ## Note
     Hasil disini adalah hanya berupa dimensi matrix hasil perkalian dan durasi waktu karena terlalu panjang jika harus ditampilkan semua. Untuk ingin tahu hasil perkalian matriks nya, silahkan "uncomment" potongan kode yang menampilkan matriks hasil (ada di main function). Perlu diketahui bahwa program sudah diuji terlebih dahulu dan dipastikan hasilnya sudah sesuai oleh pembuat
@@ -135,13 +135,45 @@ Bonus
     Hasil: 
     ![vectorReg](./img/vectorReg.png) 
 
-9. bonusIO
+9. bonus I/O
 
     cd src </br>
     python3 bonusIO.py
 
     Hasil: 
     ![bonusIO](./img/bonusIO.png) 
+
+10. bonus Distribtued System
+    1. install dask dan dask scheduler gunakan virtual machine atau mesin lainnya pada semua mesin baik utama maupun virtual
+    2. pada komputer utama:
+        - terminal 1: 
+            dask-scheduler
+        catat ip address tcp dask scheduler tcp:://IP:port dan ganti ip pada file bonusDist dengan </br>
+        ip addresss tcp dask yang sekarang
+    3. pada komputer VM:
+        masukkan ip port yang tadi dicatat pada terminal VM seperti berikut
+        terminal:
+            dask worker tcp:://IP:port 
+    4. pastikan terhubung pada scheduler dengan tanda seperti berikut pada scheduler:
+
+        2024-09-02 03:20:46,964 - distributed.scheduler - INFO - Registering Worker plugin shuffle
+        2024-09-02 03:34:38,111 - distributed.scheduler - INFO - Register worker <WorkerState 'tcp://---.---.--.--:41861', status: init, memory: 0, processing: 0>
+        2024-09-02 03:34:39,517 - distributed.scheduler - INFO - Starting worker compute stream, tcp://---.---.--.--:41861
+        2024-09-02 03:34:39,518 - distributed.core - INFO - Starting established connection to tcp://---.---.--.--:51152
+
+        Note: ---.---.--.-- merupakan ip address dari VM
+
+    5. Setelah terhubung jalankan program pada komputer utama:
+        - terminal 2:
+
+            cd src</br>
+            python3 bonusDist.py
+        
+    Hasil: 
+    ![bonusDist](./img/bonusDist.png)
+    
+
+        
 
 
 
