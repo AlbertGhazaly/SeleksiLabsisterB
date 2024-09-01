@@ -5,6 +5,7 @@
 * [Ketentuan](#ketentuan)
 * [Features](#Features)
 * [Total Poin](#total-poin)
+* [Penjelasan Singkat](#penjelasan-singkat)
 * [Usage](#usage)
 * [Note](#note)
 * [Pengujian](#pengujian)
