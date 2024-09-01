@@ -1,0 +1,14 @@
+/home/albert/Documents/code/gj/src/csharp/bin/Debug/net8.0/csharp
+/home/albert/Documents/code/gj/src/csharp/bin/Debug/net8.0/csharp.deps.json
+/home/albert/Documents/code/gj/src/csharp/bin/Debug/net8.0/csharp.runtimeconfig.json
+/home/albert/Documents/code/gj/src/csharp/bin/Debug/net8.0/csharp.dll
+/home/albert/Documents/code/gj/src/csharp/bin/Debug/net8.0/csharp.pdb
+/home/albert/Documents/code/gj/src/csharp/obj/Debug/net8.0/csharp.GeneratedMSBuildEditorConfig.editorconfig
+/home/albert/Documents/code/gj/src/csharp/obj/Debug/net8.0/csharp.AssemblyInfoInputs.cache
+/home/albert/Documents/code/gj/src/csharp/obj/Debug/net8.0/csharp.AssemblyInfo.cs
+/home/albert/Documents/code/gj/src/csharp/obj/Debug/net8.0/csharp.csproj.CoreCompileInputs.cache
+/home/albert/Documents/code/gj/src/csharp/obj/Debug/net8.0/csharp.dll
+/home/albert/Documents/code/gj/src/csharp/obj/Debug/net8.0/refint/csharp.dll
+/home/albert/Documents/code/gj/src/csharp/obj/Debug/net8.0/csharp.pdb
+/home/albert/Documents/code/gj/src/csharp/obj/Debug/net8.0/csharp.genruntimeconfig.cache
+/home/albert/Documents/code/gj/src/csharp/obj/Debug/net8.0/ref/csharp.dll

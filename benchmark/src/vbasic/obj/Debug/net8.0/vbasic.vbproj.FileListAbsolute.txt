@@ -1,0 +1,14 @@
+/home/albert/Documents/code/gj/src/vbasic/bin/Debug/net8.0/vbasic
+/home/albert/Documents/code/gj/src/vbasic/bin/Debug/net8.0/vbasic.deps.json
+/home/albert/Documents/code/gj/src/vbasic/bin/Debug/net8.0/vbasic.runtimeconfig.json
+/home/albert/Documents/code/gj/src/vbasic/bin/Debug/net8.0/vbasic.dll
+/home/albert/Documents/code/gj/src/vbasic/bin/Debug/net8.0/vbasic.pdb
+/home/albert/Documents/code/gj/src/vbasic/obj/Debug/net8.0/vbasic.GeneratedMSBuildEditorConfig.editorconfig
+/home/albert/Documents/code/gj/src/vbasic/obj/Debug/net8.0/vbasic.AssemblyInfoInputs.cache
+/home/albert/Documents/code/gj/src/vbasic/obj/Debug/net8.0/vbasic.AssemblyInfo.vb
+/home/albert/Documents/code/gj/src/vbasic/obj/Debug/net8.0/vbasic.vbproj.CoreCompileInputs.cache
+/home/albert/Documents/code/gj/src/vbasic/obj/Debug/net8.0/vbasic.dll
+/home/albert/Documents/code/gj/src/vbasic/obj/Debug/net8.0/refint/vbasic.dll
+/home/albert/Documents/code/gj/src/vbasic/obj/Debug/net8.0/vbasic.pdb
+/home/albert/Documents/code/gj/src/vbasic/obj/Debug/net8.0/vbasic.genruntimeconfig.cache
+/home/albert/Documents/code/gj/src/vbasic/obj/Debug/net8.0/ref/vbasic.dll
