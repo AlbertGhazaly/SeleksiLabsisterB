@@ -157,7 +157,7 @@ void handle_get(int client_socket, const char *path, HashTable *query_params) {
         if (name) {
             snprintf(response, sizeof(response), "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nHello %s, Nilai Akhir kamu %s\n", name,nilai);
         } else {
-            snprintf(response, sizeof(response), "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nNilai Akhir\n");
+            snprintf(response, sizeof(response), "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nNilai Akhir kamu 50 (kkm) karena tidak pakai query\n");
         }
         send(client_socket, response, strlen(response), 0);
     }else if (strcmp(path, "/ambil-data") == 0){

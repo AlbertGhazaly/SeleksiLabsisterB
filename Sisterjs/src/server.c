@@ -96,23 +96,16 @@ void parse_json(const char *body, HashTable *hashtable) {
 }
 
 void parse_plain_text(const char *body, HashTable *hashtable) {
-    char *line, *key, *value;
     char *body_copy = strdup(body);
-    char *saveptr;
+    char *key = strtok(body_copy, ":{},\" \n");
+    char *value;
 
-    line = strtok_r(body_copy, "\n", &saveptr);
-    while (line != NULL) {
-        key = strtok(line, ":");
-        value = strtok(NULL, "");
-
+    while (key != NULL) {
+        value = strtok(NULL, ":{},\" \n");
         if (key && value) {
-            char *key_trimmed = strtok(key, " \t");
-            char *value_trimmed = strtok(value, " \t");
-
-            insert(hashtable, key_trimmed, value_trimmed);
+            insert(hashtable, key, value);
         }
-
-        line = strtok_r(NULL, "\n", &saveptr);
+        key = strtok(NULL, ":{},\" \n");
     }
 
     free(body_copy);
@@ -157,7 +150,7 @@ void handle_get(int client_socket, const char *path, HashTable *query_params) {
         if (name) {
             snprintf(response, sizeof(response), "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nHello %s, Nilai Akhir kamu %s\n", name,nilai);
         } else {
-            snprintf(response, sizeof(response), "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nNilai Akhir\n");
+            snprintf(response, sizeof(response), "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n\r\nNilai Akhir kamu 50 (kkm) karena tidak pakai query\n");
         }
         send(client_socket, response, strlen(response), 0);
     }else if (strcmp(path, "/ambil-data") == 0){
