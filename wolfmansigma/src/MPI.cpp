@@ -7,7 +7,6 @@
 
 using namespace std;
 
-// Function to read matrices from file
 vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) {
     ifstream file(file_path);
     vector<vector<vector<double>>> matrices;
@@ -15,7 +14,6 @@ vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) 
     vector<double> matrix_row;
     string line;
 
-    // Skip the first line
     getline(file, line);
 
     while (getline(file, line)) {
@@ -42,7 +40,6 @@ vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) 
     return matrices;
 }
 
-// Function to perform matrix multiplication serially
 vector<vector<double>> multiply_matrices_serial(const vector<vector<double>>& A, const vector<vector<double>>& B) {
     size_t rowsA = A.size();
     size_t colsA = A[0].size();
@@ -61,7 +58,6 @@ vector<vector<double>> multiply_matrices_serial(const vector<vector<double>>& A,
     return result;
 }
 
-// Function to perform matrix multiplication in parallel with MPI
 vector<vector<double>> multiply_matrices_mpi(const vector<vector<double>>& A_input, const vector<vector<double>>& B_input) {
     int num_procs, rank;
     MPI_Comm_size(MPI_COMM_WORLD, &num_procs);
@@ -72,16 +68,13 @@ vector<vector<double>> multiply_matrices_mpi(const vector<vector<double>>& A_inp
     size_t rowsB = B_input.size();
     size_t colsB = B_input[0].size();
 
-    // Allocate local result buffer
     size_t local_rows = rowsA / num_procs + (rank < (rowsA % num_procs) ? 1 : 0);
     vector<double> local_result(local_rows * colsB, 0.0);
 
-    // Flatten matrices for broadcasting
     vector<double> A_flat(rowsA * colsA);
     vector<double> B_flat(rowsB * colsB);
 
     if (rank == 0) {
-        // Flatten matrices for broadcasting
         for (size_t i = 0; i < rowsA; ++i) {
             for (size_t j = 0; j < colsA; ++j) {
                 A_flat[i * colsA + j] = A_input[i][j];
@@ -94,17 +87,14 @@ vector<vector<double>> multiply_matrices_mpi(const vector<vector<double>>& A_inp
         }
     }
 
-    // Broadcast matrix dimensions to all processes
     MPI_Bcast(&rowsA, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     MPI_Bcast(&colsA, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     MPI_Bcast(&rowsB, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     MPI_Bcast(&colsB, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
 
-    // Broadcast flattened matrices to all processes
     MPI_Bcast(A_flat.data(), rowsA * colsA, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Bcast(B_flat.data(), rowsB * colsB, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-    // Convert flat arrays back to 2D matrices
     vector<vector<double>> A(rowsA, vector<double>(colsA));
     vector<vector<double>> B(rowsB, vector<double>(colsB));
 
@@ -119,11 +109,9 @@ vector<vector<double>> multiply_matrices_mpi(const vector<vector<double>>& A_inp
         }
     }
 
-    // Determine the range of rows each process will handle
     size_t start_row = rank * (rowsA / num_procs) + min(rank, static_cast<int>(rowsA % num_procs));
     size_t end_row = start_row + (rowsA / num_procs) + (rank < static_cast<int>(rowsA % num_procs) ? 1 : 0);
 
-    // Perform local matrix multiplication
     for (size_t i = start_row; i < end_row; ++i) {
         for (size_t j = 0; j < colsB; ++j) {
             double sum = 0.0;
@@ -134,7 +122,6 @@ vector<vector<double>> multiply_matrices_mpi(const vector<vector<double>>& A_inp
         }
     }
 
-    // Gather results to the root process
     vector<double> result(rowsA * colsB, 0.0);
     MPI_Gather(local_result.data(), local_result.size(), MPI_DOUBLE,
                result.data(), local_result.size(), MPI_DOUBLE,
@@ -149,11 +136,10 @@ vector<vector<double>> multiply_matrices_mpi(const vector<vector<double>>& A_inp
         }
         return final_result;
     } else {
-        return vector<vector<double>>();  // Return an empty result if not root
+        return vector<vector<double>>();  
     }
 }
 
-// Function to print matrix
 void print_matrix(const vector<vector<double>>& matrix) {
     for (const auto& row : matrix) {
         for (double value : row) {
@@ -177,7 +163,7 @@ int main(int argc, char* argv[]) {
         MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
-    string file_path = "../tcmatmul/32.txt";
+    string file_path = "../tcmatmul/128.txt";
 
     vector<vector<vector<double>>> matrices;
     if (rank == 0) {
@@ -196,7 +182,6 @@ int main(int argc, char* argv[]) {
         colsB = matrices[1][0].size();
     }
 
-    // Broadcast matrix dimensions to all processes
     MPI_Bcast(&rowsA, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     MPI_Bcast(&colsA, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     MPI_Bcast(&rowsB, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
@@ -206,7 +191,6 @@ int main(int argc, char* argv[]) {
     vector<vector<double>> B(rowsB, vector<double>(colsB));
 
     if (rank == 0) {
-        // Flatten matrices for broadcasting
         vector<double> A_flat(rowsA * colsA);
         vector<double> B_flat(rowsB * colsB);
 
@@ -224,7 +208,6 @@ int main(int argc, char* argv[]) {
         MPI_Bcast(A_flat.data(), rowsA * colsA, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         MPI_Bcast(B_flat.data(), rowsB * colsB, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 
-        // Fill matrix A and B with the broadcasted data
         for (size_t i = 0; i < rowsA; ++i) {
             for (size_t j = 0; j < colsA; ++j) {
                 A[i][j] = A_flat[i * colsA + j];
@@ -254,7 +237,6 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Serial computation
     vector<vector<double>> result_serial;
     if (rank == 0) {
         auto start_time_serial = chrono::high_resolution_clock::now();
@@ -262,11 +244,11 @@ int main(int argc, char* argv[]) {
         auto end_time_serial = chrono::high_resolution_clock::now();
         chrono::duration<double, milli> duration_serial = end_time_serial - start_time_serial;
         cout << "Hasil perkalian matriks (Serial):" << endl;
-        print_matrix(result_serial);
+        // print_matrix(result_serial);
+        cout<<"size: "<<result_serial.size()<<"x"<<result_serial[0].size()<<endl;
         cout << "Durasi perhitungan (Serial): " << duration_serial.count() << " ms" << endl;
     }
 
-    // Parallel computation
     auto start_time_parallel = chrono::high_resolution_clock::now();
     vector<vector<double>> result_parallel = multiply_matrices_mpi(A, B);
     auto end_time_parallel = chrono::high_resolution_clock::now();
@@ -274,7 +256,8 @@ int main(int argc, char* argv[]) {
 
     if (rank == 0) {
         cout << "Hasil perkalian matriks (Parallel dengan MPI):" << endl;
-        print_matrix(result_parallel);
+        // print_matrix(result_parallel);
+        cout<<"size: "<<result_parallel.size()<<"x"<<result_parallel[0].size()<<endl;
         cout << "Durasi perhitungan (Parallel dengan MPI): " << duration_parallel.count() << " ms" << endl;
     }
 

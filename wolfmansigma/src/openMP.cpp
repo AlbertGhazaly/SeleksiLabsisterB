@@ -7,7 +7,6 @@
 
 using namespace std;
 
-// Fungsi untuk membaca matriks dari file
 vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) {
     ifstream file(file_path);
     vector<vector<vector<double>>> matrices;
@@ -15,7 +14,6 @@ vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) 
     vector<double> matrix_row;
     string line;
 
-    // Abaikan baris pertama
     getline(file, line);
 
     while (getline(file, line)) {
@@ -42,7 +40,6 @@ vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) 
     return matrices;
 }
 
-// Fungsi untuk melakukan perkalian matriks secara serial
 vector<vector<double>> multiply_matrices_serial(const vector<vector<double>>& A, const vector<vector<double>>& B) {
     size_t rowsA = A.size();
     size_t colsA = A[0].size();
@@ -61,7 +58,6 @@ vector<vector<double>> multiply_matrices_serial(const vector<vector<double>>& A,
     return result;
 }
 
-// Fungsi untuk melakukan perkalian matriks secara paralel dengan OpenMP
 vector<vector<double>> multiply_matrices_parallel(const vector<vector<double>>& A, const vector<vector<double>>& B) {
     size_t rowsA = A.size();
     size_t colsA = A[0].size();
@@ -83,7 +79,6 @@ vector<vector<double>> multiply_matrices_parallel(const vector<vector<double>>& 
     return result;
 }
 
-// Fungsi untuk mencetak matriks
 void print_matrix(const vector<vector<double>>& matrix) {
     for (const auto& row : matrix) {
         for (double value : row) {
@@ -94,10 +89,8 @@ void print_matrix(const vector<vector<double>>& matrix) {
 }
 
 int main() {
-    // Path ke file matriks
-    string file_path = "../tcmatmul/32.txt";
+    string file_path = "../tcmatmul/128.txt";
 
-    // Membaca matriks dari file
     vector<vector<vector<double>>> matrices = read_matrices_from_file(file_path);
 
     if (matrices.size() != 2) {
@@ -108,10 +101,10 @@ int main() {
     vector<vector<double>> A = matrices[0];
     vector<vector<double>> B = matrices[1];
 
-    cout << "Matriks Pertama:" << endl;
-    print_matrix(A);
-    cout << "Matriks Kedua:" << endl;
-    print_matrix(B);
+    // cout << "Matriks Pertama:" << endl;
+    // print_matrix(A);
+    // cout << "Matriks Kedua:" << endl;
+    // print_matrix(B);
 
     // Mengukur waktu eksekusi untuk versi serial
     auto start_time_serial = chrono::high_resolution_clock::now();
@@ -120,7 +113,8 @@ int main() {
     chrono::duration<double, milli> duration_serial = end_time_serial - start_time_serial;
 
     cout << "Hasil perkalian matriks (Serial):" << endl;
-    print_matrix(result_serial);
+    // print_matrix(result_serial);
+    cout<< "size: "<<result_serial.size()<<"x"<<result_serial[0].size()<<endl;
     cout << "Durasi perhitungan (Serial): " << duration_serial.count() << " ms" << endl;
 
     // Mengukur waktu eksekusi untuk versi paralel
@@ -130,7 +124,9 @@ int main() {
     chrono::duration<double, milli> duration_parallel = end_time_parallel - start_time_parallel;
 
     cout << "Hasil perkalian matriks (Parallel):" << endl;
-    print_matrix(result_parallel);
+    // print_matrix(result_parallel);
+    cout<< "size: "<<result_parallel.size()<<"x"<<result_parallel[0].size()<<endl;
+
     cout << "Durasi perhitungan (Parallel): " << duration_parallel.count() << " ms" << endl;
 
     return 0;

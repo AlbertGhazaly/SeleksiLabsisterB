@@ -102,7 +102,7 @@ func multiplyMatricesParallel(firstMatrix, secondMatrix [][]float64) [][]float64
     return result
 }
 
-// Mencetak matriks ke konsol
+// Print matriksz
 func printMatrix(matrix [][]float64) {
     for _, row := range matrix {
         for _, value := range row {
@@ -112,31 +112,32 @@ func printMatrix(matrix [][]float64) {
     }
 }
 
-// Program utama
 func main() {
-    firstMatrix, secondMatrix, err := readMatricesFromFile("../tcmatmul/32.txt")
+    firstMatrix, secondMatrix, err := readMatricesFromFile("../tcmatmul/128.txt")
     if err != nil {
         fmt.Println("Error reading matrices:", err)
         return
     }
 
-    // Mengukur durasi perhitungan serial
     startTimeSerial := time.Now()
     resultSerial := multiplyMatricesSerial(firstMatrix, secondMatrix)
 	endTimeSerial := time.Now()
     durationSerial := endTimeSerial.Sub(startTimeSerial).Microseconds()
 
     fmt.Println("Hasil perkalian matriks (Serial):")
-    printMatrix(resultSerial)
+    fmt.Println("contoh hasil baris 1 kolom 1 karena di go variabel harus kepakai")
+
+    fmt.Println(resultSerial[0][0])
     fmt.Printf("Durasi perhitungan (Serial): %3f ms\n", float64(durationSerial)/1000)
 
-    // Mengukur durasi perhitungan parallel
     startTimeParallel := time.Now()
     resultParallel := multiplyMatricesParallel(firstMatrix, secondMatrix)
 	endTImeParallel := time.Now()
     durationParallel := endTImeParallel.Sub(startTimeParallel).Microseconds()
 
     fmt.Println("Hasil perkalian matriks (Parallel):")
-    printMatrix(resultParallel)
+    fmt.Println("contoh hasil baris 1 kolom 1 karena di go variabel harus kepakai")
+
+    fmt.Println(resultParallel[0][0])
     fmt.Printf("Durasi perhitungan (Parallel): %3f ms\n", float64(durationParallel)/1000)
 }

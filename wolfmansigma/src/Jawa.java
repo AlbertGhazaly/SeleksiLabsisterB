@@ -126,7 +126,7 @@ public class Jawa {
 
     public static void main(String[] args) {
         try {
-            List<double[][]> matrices = readMatricesFromFile("../tcmatmul/512.txt");
+            List<double[][]> matrices = readMatricesFromFile("../tcmatmul/128.txt");
             if (matrices.size() != 2) {
                 throw new IllegalArgumentException("File harus berisi tepat dua matriks");
             }
@@ -137,9 +137,9 @@ public class Jawa {
             double[][] result = multiplyMatrices(firstMatrix, secondMatrix);
             long endTime = System.nanoTime();
             System.out.println("Hasil perkalian matriks:");
-            for (int i= 0;i<result.length;i++){
-                System.out.print(result[i][0]+" ");
-            }
+            // for (int i= 0;i<result.length;i++){
+            //     System.out.print(result[i][0]+" ");
+            // }
             System.out.println("");
             System.out.println("Shape: "+result.length+"x"+result[0].length);
             long duration = endTime - startTime;
@@ -149,14 +149,13 @@ public class Jawa {
             double[][] result2 = multiplyMatricesParallel(firstMatrix, secondMatrix);
             endTime = System.nanoTime();
             System.out.println("Hasil perkalian matriks Paralel:");
-            for (int i= 0;i<result2.length;i++){
-                System.out.print(result2[i][0]+" ");
-            }
+            // for (int i= 0;i<result2.length;i++){
+            //     System.out.print(result2[i][0]+" ");
+            // }
             System.out.println("");
             System.out.println("Shape: "+result2.length+"x"+result2[0].length);
             duration = endTime - startTime;
             System.out.println("Durasi perhitungan (dalam milidetik): " + (duration / 1_000_000.0));
-            // printMatrix(result)
             
         } catch (IOException e) {
             e.printStackTrace();

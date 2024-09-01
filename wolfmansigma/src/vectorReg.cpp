@@ -10,7 +10,6 @@
 
 using namespace std;
 using namespace std::chrono;
-// Function to read matrices from file
 vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) {
     ifstream file(file_path);
     vector<vector<vector<double>>> matrices;
@@ -18,7 +17,6 @@ vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) 
     vector<double> matrix_row;
     string line;
 
-    // Skip the first line
     getline(file, line);
 
     while (getline(file, line)) {
@@ -45,7 +43,6 @@ vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) 
     return matrices;
 }
 
-// Serial matrix multiplication
 vector<vector<double>> multiply_matrices_serial(const vector<vector<double>>& A, const vector<vector<double>>& B) {
     int n = A.size();
     int m = B[0].size();
@@ -64,7 +61,6 @@ vector<vector<double>> multiply_matrices_serial(const vector<vector<double>>& A,
     return result;
 }
 
-// Parallel matrix multiplication using SIMD
 vector<vector<double>> multiply_matrices_parallel(const vector<vector<double>>& A, const vector<vector<double>>& B) {
     int n = A.size();
     int m = B[0].size();
@@ -99,7 +95,7 @@ void print_matrix(const vector<vector<double>>& matrix) {
 }
 
 int main() {
-    string file_path = "../tcmatmul/32.txt";  // Replace with your file path
+    string file_path = "../tcmatmul/128.txt";  // Replace with your file path
     vector<vector<vector<double>>> matrices = read_matrices_from_file(file_path);
 
     if (matrices.size() < 2) {
@@ -122,11 +118,13 @@ int main() {
     auto duration_parallel = duration_cast<microseconds>(end_parallel - start_parallel).count() / 1000.0;
 
     cout << "Serial Result:" << endl;
-    print_matrix(result_serial);
+    // print_matrix(result_serial);
+    cout<<"size: "<<result_serial.size()<<"x"<<result_serial[0].size()<<endl;
     cout << "Duration Serial: " << duration_serial << " ms\n" << endl;
 
     cout << "Parallel Result:" << endl;
-    print_matrix(result_parallel);
+    // print_matrix(result_parallel);
+    cout<<"size: "<<result_parallel.size()<<"x"<<result_parallel[0].size()<<endl;
     cout << "Duration Parallel: " << duration_parallel << " ms" << endl<<setprecision(3);
 
     return 0;

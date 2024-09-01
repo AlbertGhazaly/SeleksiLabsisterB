@@ -9,7 +9,6 @@
 
 using namespace std;
 
-// OpenCL kernel for matrix multiplication
 const char* kernelSource = R"(
 __kernel void matrixMultiplyKernel(__global const double* A,
                                    __global const double* B,
@@ -29,16 +28,7 @@ __kernel void matrixMultiplyKernel(__global const double* A,
     }
 }
 )";
-#include <iostream>
-#include <vector>
-#include <fstream>
-#include <sstream>
-#include <string>
 
-using namespace std;
-
-
-// Function to read matrices from file
 vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) {
     ifstream file(file_path);
     vector<vector<vector<double>>> matrices;
@@ -46,7 +36,6 @@ vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) 
     vector<double> matrix_row;
     string line;
 
-    // Skip the first line
     getline(file, line);
 
     while (getline(file, line)) {
@@ -73,32 +62,6 @@ vector<vector<vector<double>>> read_matrices_from_file(const string& file_path) 
     return matrices;
 }
 
-
-
-
-
-// Function for serial matrix multiplication
-vector<vector<double>> multiply_matrices_serial(const vector<vector<double>>& A, const vector<vector<double>>& B) {
-    int rowsA = A.size();
-    int colsA = A[0].size();
-    int rowsB = B.size();
-    int colsB = B[0].size();
-    cout<<"serial: "<<colsA<<" "<<rowsB<<endl;
-    if (colsA != rowsB) {
-        cerr << "Matrix dimensions do not match for multiplication" << endl;
-        exit(EXIT_FAILURE);
-    }
-
-    vector<vector<double>> C(rowsA, vector<double>(colsB, 0));
-    for (int i = 0; i < rowsA; ++i) {
-        for (int j = 0; j < colsB; ++j) {
-            for (int k = 0; k < colsA; ++k) {
-                C[i][j] += A[i][k] * B[k][j];
-            }
-        }
-    }
-    return C;
-}
 
 vector<vector<double>> multiply_matrices_opencl(const vector<vector<double>>& A, const vector<vector<double>>& B) {
     int rowsA = A.size();
@@ -132,47 +95,31 @@ vector<vector<double>> multiply_matrices_opencl(const vector<vector<double>>& A,
     cl_context context;
     cl_command_queue queue;
 
-    // Get platform ID
     err = clGetPlatformIDs(1, &platform, NULL);
     if (err != CL_SUCCESS) {
         cerr << "Error getting platform ID: " << err << endl;
         exit(EXIT_FAILURE);
     }
 
-    // Get device ID
-    cl_uint numDevices;
-    err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 0, NULL, &numDevices);
-    if (err != CL_SUCCESS || numDevices == 0) {
-        cerr << "Error getting device count: " << err << endl;
-        exit(EXIT_FAILURE);
-    }
-
-    vector<cl_device_id> devices(numDevices);
-    err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, numDevices, devices.data(), NULL);
+    err = clGetDeviceIDs(platform, CL_DEVICE_TYPE_GPU, 1, &device, NULL);
     if (err != CL_SUCCESS) {
-        cerr << "Error getting device IDs: " << err << endl;
+        cerr << "Error getting device ID: " << err << endl;
         exit(EXIT_FAILURE);
     }
 
-    device = devices[0]; // Use the first available device
-
-    // Create context
     context = clCreateContext(NULL, 1, &device, NULL, NULL, &err);
     if (err != CL_SUCCESS) {
         cerr << "Error creating context: " << err << endl;
         exit(EXIT_FAILURE);
     }
 
-    // Create command queue
-    cl_command_queue_properties properties = CL_QUEUE_PROFILING_ENABLE;
-    queue = clCreateCommandQueueWithProperties(context, device, &properties, &err);
+    queue = clCreateCommandQueueWithProperties(context, device, 0, &err);
     if (err != CL_SUCCESS) {
         cerr << "Error creating command queue: " << err << endl;
         clReleaseContext(context);
         exit(EXIT_FAILURE);
     }
 
-    // Create memory buffers
     cl_mem d_A = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, flatA.size() * sizeof(double), flatA.data(), &err);
     cl_mem d_B = clCreateBuffer(context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, flatB.size() * sizeof(double), flatB.data(), &err);
     cl_mem d_C = clCreateBuffer(context, CL_MEM_WRITE_ONLY, rowsA * colsB * sizeof(double), NULL, &err);
@@ -183,7 +130,6 @@ vector<vector<double>> multiply_matrices_opencl(const vector<vector<double>>& A,
         exit(EXIT_FAILURE);
     }
 
-    // Create and build program
     cl_program program = clCreateProgramWithSource(context, 1, &kernelSource, NULL, &err);
     if (err != CL_SUCCESS) {
         cerr << "Error creating program: " << err << endl;
@@ -214,7 +160,6 @@ vector<vector<double>> multiply_matrices_opencl(const vector<vector<double>>& A,
         exit(EXIT_FAILURE);
     }
 
-    // Create kernel
     cl_kernel kernel = clCreateKernel(program, "matrixMultiplyKernel", &err);
     if (err != CL_SUCCESS) {
         cerr << "Error creating kernel: " << err << endl;
@@ -227,7 +172,6 @@ vector<vector<double>> multiply_matrices_opencl(const vector<vector<double>>& A,
         exit(EXIT_FAILURE);
     }
 
-    // Set kernel arguments
     clSetKernelArg(kernel, 0, sizeof(cl_mem), &d_A);
     clSetKernelArg(kernel, 1, sizeof(cl_mem), &d_B);
     clSetKernelArg(kernel, 2, sizeof(cl_mem), &d_C);
@@ -235,11 +179,9 @@ vector<vector<double>> multiply_matrices_opencl(const vector<vector<double>>& A,
     clSetKernelArg(kernel, 4, sizeof(int), &colsA);
     clSetKernelArg(kernel, 5, sizeof(int), &colsB);
 
-    // Define work sizes
     size_t global_work_size[2] = { (size_t)colsB, (size_t)rowsA };
-    size_t local_work_size[2] = { 16, 16 }; // Adjust if necessary
+    size_t local_work_size[2] = { 16, 16 };
 
-    // Launch kernel
     err = clEnqueueNDRangeKernel(queue, kernel, 2, NULL, global_work_size, local_work_size, 0, NULL, NULL);
     if (err != CL_SUCCESS) {
         cerr << "Error enqueuing kernel: " << err << endl;
@@ -253,7 +195,6 @@ vector<vector<double>> multiply_matrices_opencl(const vector<vector<double>>& A,
         exit(EXIT_FAILURE);
     }
 
-    // Read result
     vector<double> flatC(rowsA * colsB);
     err = clEnqueueReadBuffer(queue, d_C, CL_TRUE, 0, flatC.size() * sizeof(double), flatC.data(), 0, NULL, NULL);
     if (err != CL_SUCCESS) {
@@ -268,7 +209,6 @@ vector<vector<double>> multiply_matrices_opencl(const vector<vector<double>>& A,
         exit(EXIT_FAILURE);
     }
 
-    // Release OpenCL resources
     clReleaseKernel(kernel);
     clReleaseProgram(program);
     clReleaseMemObject(d_A);
@@ -277,72 +217,83 @@ vector<vector<double>> multiply_matrices_opencl(const vector<vector<double>>& A,
     clReleaseCommandQueue(queue);
     clReleaseContext(context);
 
-    // Convert result to 2D vector
-    vector<vector<double>> result(rowsA, vector<double>(colsB));
+    vector<vector<double>> C(rowsA, vector<double>(colsB));
     for (int i = 0; i < rowsA; ++i) {
         for (int j = 0; j < colsB; ++j) {
-            result[i][j] = flatC[i * colsB + j];
+            C[i][j] = flatC[i * colsB + j];
+        }
+    }
+
+    return C;
+}
+vector<vector<double>> multiply_matrices_serial(const vector<vector<double>>& A, const vector<vector<double>>& B) {
+    size_t rowsA = A.size();
+    size_t colsA = A[0].size();
+    size_t colsB = B[0].size();
+
+    vector<vector<double>> result(rowsA, vector<double>(colsB, 0.0));
+
+    for (size_t i = 0; i < rowsA; ++i) {
+        for (size_t j = 0; j < colsB; ++j) {
+            for (size_t k = 0; k < colsA; ++k) {
+                result[i][j] += A[i][k] * B[k][j];
+            }
         }
     }
 
     return result;
 }
-
-// Function to print a matrix
-void print_matrix(const vector<vector<double>>& matrix) {
-    for (const auto& row : matrix) {
-        for (const auto& val : row) {
-            cout << val << " ";
-        }
-        cout << endl;
-    }
-}
-
+// Main function
 int main() {
-    string filename = "../tcmatmul/32.txt";
-    vector<vector<vector<double>>> matrices = read_matrices_from_file(filename);
-
-    if (matrices.size() < 2) {
-        cerr << "Error: Not enough matrices for multiplication" << endl;
+    // Read matrices from file
+    string input_file = "../tcmatmul/128.txt";
+    auto matrices = read_matrices_from_file(input_file);
+    if (matrices.size() != 2) {
+        cerr << "Error: Expected exactly two matrices." << endl;
         return EXIT_FAILURE;
     }
 
-    vector<vector<double>> A = matrices[0];
-    vector<vector<double>> B = matrices[1];
-    
-    int rowsA = A.size();
-    int colsA = A[0].size();
-    int rowsB = B.size();
-    int colsB = B[0].size();
-    // cout<<rowsA<<" "<<colsA<<endl;
-    // cout<<A[32].size()<<endl;
-    // print_matrix(A);
-    // cout<<"\n\nB\n\n";
-    // cout<<rowsB<<" "<<colsB<<endl;
+    auto A = matrices[0];
+    auto B = matrices[1];
 
-    // Flatten matrices for OpenCL
-    // print_matrix(B);
+    // serial
+    cout << "Result Matrix Parallel:" << endl;
+
     auto start = chrono::high_resolution_clock::now();
-    vector<vector<double>> result_serial = multiply_matrices_serial(A,B);
+
+    vector<vector<double>> result_serial = multiply_matrices_serial(A, B);
     auto end = chrono::high_resolution_clock::now();
-    chrono::duration<double, milli> duration_serial = end - start;
-    cout << "Hasil Matriks Serial:" << endl;
-    // print_matrix(result_serial);
-    cout << "Durasi perhitungan (Serial): " << duration_serial.count() << " ms" << endl;
+    // for (const auto& row : result_serial) {
+    //     for (const auto& elem : row) {
+    //         cout << elem << " ";
+    //     }
+    //     cout << endl;
+    // }
+    cout<<"size: "<<result_serial.size()<<"x"<<result_serial[0].size()<<endl;
 
+    auto duration = chrono::duration_cast<chrono::milliseconds>(end - start).count();
+
+    cout << "Serial execution time: " << duration << " ms" << endl;
+    
+    // Perform matrix multiplication using OpenCL
     start = chrono::high_resolution_clock::now();
-    vector<vector<double>> result_parallel = multiply_matrices_opencl(A,B);
+    vector<vector<double>> result = multiply_matrices_opencl(A, B);
     end = chrono::high_resolution_clock::now();
-    chrono::duration<double, milli> duration_parallel = end - start;
-    cout << "Hasil Matriks Parallel (OpenCL):" << endl;
-    print_matrix(result_parallel);
-    cout << "Durasi perhitungan (Parallel dengan OpenCL): " << duration_parallel.count() << " ms" << endl;
+    duration = chrono::duration_cast<chrono::milliseconds>(end - start).count();
 
+    // Output the result
+    cout << "Result Matrix Parallel:" << endl;
+    // for (const auto& row : result) {
+    //     for (const auto& elem : row) {
+    //         cout << elem << " ";
+    //     }
+    //     cout << endl;
+    // }
+    cout<<"size: "<<result.size()<<"x"<<result[0].size()<<endl;
    
 
-    
+    cout << "Parallel execution time: " << duration << " ms" << endl;
 
     return 0;
 }
-
-
+       

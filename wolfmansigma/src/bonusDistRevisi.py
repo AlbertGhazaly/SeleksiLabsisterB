@@ -1,5 +1,7 @@
+import numpy as np
 import time
-from multiprocessing import Pool
+import dask.array as da
+from dask.distributed import Client
 
 def read_matrix_from_file(file_path):
     with open(file_path, 'r') as file:
@@ -12,11 +14,11 @@ def read_matrix_from_file(file_path):
                 row = list(map(float, line.strip().split()))
                 matrix.append(row)
             else:
-                matrices.append(matrix)
+                matrices.append(np.array(matrix))
                 matrix = []
     
     if matrix:
-        matrices.append(matrix)
+        matrices.append(np.array(matrix))
     
     return matrices
 
@@ -37,28 +39,31 @@ def multiply_matrices_serial(A, B):
     
     return C
 
-def multiply_row(args):
-    A, B, row = args
-    cols_B = len(B[0])
-    result_row = [0] * cols_B
-    for j in range(cols_B):
-        for k in range(len(B)):
-            result_row[j] += A[row][k] * B[k][j]
-    return result_row
-
-def multiply_matrices_parallel(A, B):
-    with Pool() as pool:
-        result = pool.map(multiply_row, [(A, B, i) for i in range(len(A))])
-    return result
+def multiply_matrices_dask(A, B):
+    # Convert NumPy arrays to Dask arrays
+    dA = da.from_array(A, chunks=(A.shape[0], A.shape[1]))
+    dB = da.from_array(B, chunks=(B.shape[0], B.shape[1]))
+    
+    # Perform matrix multiplication using Dask
+    dC = da.matmul(dA, dB)
+    
+    # Compute the result
+    C = dC.compute()
+    
+    return C
 
 def main():
-    matrices = read_matrix_from_file('../tcmatmul/128.txt')
+    # Connect to Dask Scheduler
+    client = Client('tcp://192.168.0.1:8786')  # Ganti dengan alamat IP dan port scheduler Anda
+    
+    matrices = read_matrix_from_file('../tcmatmul/32.txt')
     
     if len(matrices) != 2:
         raise ValueError("File must contain exactly two matrices")
     
     A, B = matrices
 
+    # Matriks perkalian versi serial
     start = time.time()
     result_serial = multiply_matrices_serial(A, B)
     print("Result of matrix multiplication (Serial):")
@@ -68,14 +73,18 @@ def main():
     end = time.time()
     print("Duration Serial: ", (end-start)*1000, "ms")
 
+    # Matriks perkalian versi paralel
     start = time.time()
-    result_parallel = multiply_matrices_parallel(A, B)
+    result_parallel = multiply_matrices_dask(A, B)
     print("\nResult of matrix multiplication (Parallel):")
     # for row in result_parallel:
     #     print(row)
     print("Shape:", (len(result_parallel), len(result_parallel[0])))
     end = time.time()
     print("Duration Parallel: ", (end-start)*1000, "ms")
+    
+    # Close Dask Client
+    client.close()
 
 if __name__ == "__main__":
     main()

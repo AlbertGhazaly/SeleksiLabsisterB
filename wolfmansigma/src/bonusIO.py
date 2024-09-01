@@ -1,11 +1,8 @@
-import numpy as np
 import time
-import dask.array as da
-import dask
-from dask.delayed import delayed
+from multiprocessing import Process, Queue
+from concurrent.futures import ProcessPoolExecutor
 
-# Function to read matrices from file
-def read_matrix_from_file(file_path):
+def read_matrix_from_file(file_path, queue):
     with open(file_path, 'r') as file:
         lines = file.readlines()
     matrices = []
@@ -16,62 +13,52 @@ def read_matrix_from_file(file_path):
                 row = list(map(float, line.strip().split()))
                 matrix.append(row)
             else:
-                matrices.append(np.array(matrix))
+                matrices.append(matrix)
                 matrix = []
+
     if matrix:
-        matrices.append(np.array(matrix))
-    return matrices
+        matrices.append(matrix)
 
-# Function to multiply matrices (serial)
-def multiply_matrices(A, B):
-    rows_A, cols_A = A.shape
-    rows_B, cols_B = B.shape
-    if cols_A != rows_B:
-        raise ValueError("Number of columns in A must be equal to number of rows in B")
-    C = np.zeros((rows_A, cols_B))
-    for i in range(rows_A):
-        for j in range(cols_B):
-            C[i, j] = sum(A[i, k] * B[k, j] for k in range(cols_A))
-    return C
+    queue.put(matrices)
 
-# Function to multiply matrices using Dask
-def multiply_matrices_dask(A, B):
-    dA = da.from_array(A, chunks=(A.shape[0], A.shape[1]))
-    dB = da.from_array(B, chunks=(B.shape[0], B.shape[1]))
-    dC = da.matmul(dA, dB)
-    C = dC.compute()
-    return C
+def multiply_row(args):
+    A, B, row = args
+    cols_B = len(B[0])
+    result_row = [0] * cols_B
+    for j in range(cols_B):
+        for k in range(len(B)):
+            result_row[j] += A[row][k] * B[k][j]
+    return result_row
 
-# Delayed function to read matrices from file
-@delayed
-def delayed_read_matrix_from_file(file_path):
-    return read_matrix_from_file(file_path)
+def multiply_matrices_parallel(A, B):
+    with ProcessPoolExecutor() as executor:
+        result = list(executor.map(multiply_row, [(A, B, i) for i in range(len(A))]))
+    return result
 
-# Main function
 def main():
-    file_path = '../tcmatmul/32.txt'
-    
-    # Parallel read and multiplication
-    matrices = delayed_read_matrix_from_file(file_path)
-    A, B = matrices.compute()
-    
-    # Start timing for serial multiplication
-    start_serial = time.time()
-    result_serial = multiply_matrices(A, B)
-    end_serial = time.time()
-    print("Serial multiplication result:")
-    print(result_serial)
-    print(result_serial.shape)
-    print("Duration Serial: {:.3f} ms".format((end_serial - start_serial) * 1000))
-    
-    # Start timing for parallel multiplication
-    start_parallel = time.time()
-    result_parallel = multiply_matrices_dask(A, B)
-    end_parallel = time.time()
-    print("Parallel multiplication result:")
-    print(result_parallel)
-    print(result_parallel.shape)
-    print("Duration Parallel: {:.3f} ms".format((end_parallel - start_parallel) * 1000))
+    file_path = '../tcmatmul/128.txt'
+    queue = Queue()
+
+    reader_process = Process(target=read_matrix_from_file, args=(file_path, queue))
+    reader_process.start()
+
+    matrices = queue.get()
+    reader_process.join()
+
+    if len(matrices) != 2:
+        raise ValueError("File must contain exactly two matrices")
+
+    A, B = matrices
+    # print("Matrix A shape:", (len(A), len(A[0])))
+    # print("Matrix B shape:", (len(B), len(B[0])))
+
+    start_multiplication = time.time()
+    result_parallel = multiply_matrices_parallel(A, B)
+    end_multiplication = time.time()
+
+    print("\nResult of matrix multiplication (Parallel):")
+    print("Shape:", (len(result_parallel), len(result_parallel[0])))
+    print("Duration: ", (end_multiplication - start_multiplication) * 1000, "ms")
 
 if __name__ == "__main__":
     main()
