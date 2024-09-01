@@ -8,8 +8,9 @@
 * [Screenshots](#screenshots)
 * [Setup](#setup)
 * [Usage](#usage)
+* [ListBahasa](#list-bahasa)
 * [Profile](#profile)
-* [Note]
+* [Note](#note)
 ## Ketentuan
 Buatlah program yang menerima input berupa matrix nn yang dibaca dari sebuah file dan mengeluarkan output berupa hasil inversi dari matrix input yang ditulis pada sebuah file yang berbeda. Format file input berupa sebuah bilangan n pada baris pertama, diikuti n buah baris yang masing-masing memiliki n buah bilangan. Program tidak perlu menghandle kondisi dimana matrix input yang diberikan tidak dapat diinversi dan asumsikan input selalu berupa matrix nn. Algoritma inversi yang digunakan adalah Gauss-Jordan. Dilarang menggunakan library.
 
