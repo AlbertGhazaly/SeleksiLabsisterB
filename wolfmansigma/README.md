@@ -31,14 +31,17 @@ Bonus
 - (Poin 1) Pipeline I/O untuk melakukan perkalian matriks bersamaan dengan proses pembacaan input. Implementasi pada salah satu API paralel yang Anda pilih.
 
 
-
 ## Features
 - Spek Wajib kecuali CUDA (10 Poin)
 - Bonus Distributed System (3 Poin)
 - Bonus Pipeline I/O (1 Poin)
 ## Total Poin
     point = 10 + 3 + 1 = 14 Poin
-
+    
+## Penjelasan Singkat
+    Berbeda dengan serial yang hanya mengalikan matriks dengan biasa, paralel dapat memangkas waktu atau durasi pada perkalian matriks besasr (lebih dari 64) karena dia banyak </br>
+    core yang digunakan di mana tiap-tiap core menghitung tiap-tiap baris dari hasil perkalian
+    
 ## Usage
     1. Download test case (dari soal) dan taruh di direktori utama:
         | wolfmansigma
